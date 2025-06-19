@@ -10,14 +10,14 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.quizapp.R;
 
-public class SignupActivity extends AppCompatActivity {
+public class MainMenuActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_signup);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_signup), (v, insets) -> {
+        setContentView(R.layout.activity_main_menu);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_mainmenu), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
