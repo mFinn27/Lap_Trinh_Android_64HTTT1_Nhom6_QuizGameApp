@@ -13,6 +13,9 @@
         android:theme="@style/Theme.QuizApp"
         tools:targetApi="31">
         <activity
+            android:name=".activity.AddQuestionActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.QuizplayActivity"
             android:exported="false" />
         <activity
