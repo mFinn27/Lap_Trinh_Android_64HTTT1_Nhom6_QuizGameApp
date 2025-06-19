@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- Topic Icon -->
+        <ImageView
+            android:id="@+id/iv_topic_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_topic_animal"
+            android:contentDescription="Topic Icon" />
+
+        <!-- Topic Name -->
+        <TextView
+            android:id="@+id/tv_topic_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:text="Topic Name"
+            android:fontFamily="casual"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Admin Controls (Edit/Delete) -->
+        <ImageButton
+            android:id="@+id/btn_add_question"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:background="@null"
+            android:src="@drawable/ic_add"
+            android:visibility=""
+            android:contentDescription="Add Question" />
+
+        <ImageButton
+            android:id="@+id/btn_edit_topic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:background="@null"
+            android:src="@drawable/ic_edit"
+            android:visibility=""
+            android:contentDescription="Edit Topic" />
+
+        <ImageButton
+            android:id="@+id/btn_delete_topic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:src="@drawable/ic_delete"
+            android:visibility=""
+            android:contentDescription="Delete Topic" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
