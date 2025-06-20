@@ -1,41 +1,102 @@
-package com.example.quizapp.activity;
+    package com.example.quizapp.activity;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.Toast;
+    import android.content.Intent;
+    import android.os.Bundle;
+    import android.view.View;
+    import android.widget.Button;
+    import android.widget.ImageButton;
+    import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+    import androidx.activity.EdgeToEdge;
+    import androidx.appcompat.app.AppCompatActivity;
+    import androidx.core.graphics.Insets;
+    import androidx.core.view.ViewCompat;
+    import androidx.core.view.WindowInsetsCompat;
 
-import com.example.quizapp.R;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-
-public class LoginActivity extends AppCompatActivity {
-    private TextInputEditText etEmail, etPassword;
-    Button btnLogin, btnSignup;
-    private FirebaseAuth auth;
-    private ImageButton btn_back;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_login), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-        etEmail = findViewById(R.id.et_email);
-        etPassword = findViewById(R.id.et_password);
-        btnLogin = findViewById(R.id.btn_login);
-        btnSignup = findViewById(R.id.btn_signup);
-        btn_back = findViewById(R.id.button_back);
-        auth = FirebaseAuth.getInstance();
+    import com.example.quizapp.R;
+    import com.google.android.material.textfield.TextInputEditText;
+    import com.google.firebase.auth.FirebaseAuth;
+    import com.google.firebase.auth.FirebaseUser;
+    import com.google.firebase.firestore.FirebaseFirestore;
+    import com.google.firebase.firestore.QueryDocumentSnapshot;
+    public class LoginActivity extends AppCompatActivity {
+        private TextInputEditText etEmail, etPassword;
+        Button btnLogin, btnSignup;
+        private FirebaseAuth auth;
+        private FirebaseFirestore db;
+        private ImageButton btn_back;
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            EdgeToEdge.enable(this);
+            setContentView(R.layout.activity_login);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_login), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+            etEmail = findViewById(R.id.et_email);
+            etPassword = findViewById(R.id.et_password);
+            btnLogin = findViewById(R.id.btn_login);
+            btnSignup = findViewById(R.id.btn_signup);
+            btn_back = findViewById(R.id.button_back);
+            auth = FirebaseAuth.getInstance();
+            db= FirebaseFirestore.getInstance();
+            btn_back.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
+            btnLogin.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    loginUser();
+                }
+            });
+            btnSignup.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v){
+                    startActivity(new Intent(LoginActivity.this, SignupActivity.class));
+                }
+            });
+        }
+        private void loginUser() {
+            String email = etEmail.getText().toString();
+            String password = etPassword.getText().toString();
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = auth.getCurrentUser();
+                            if (user != null) {
+                                // Lấy vai trò từ Firestore
+                                db.collection("users")
+                                        .whereEqualTo("uid", user.getUid())
+                                        .get()
+                                        .addOnCompleteListener(task1 -> {
+                                            if (task1.isSuccessful() && !task1.getResult().isEmpty()) {
+                                                for (QueryDocumentSnapshot document : task1.getResult()) {
+                                                    String role = document.getString("role");
+                                                    if ("admin".equals(role)) {
+                                                        startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+                                                    } else {
+                                                        startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+                                                    }
+                                                    finish();
+                                                }
+                                            } else {
+                                                Toast.makeText(this, "Không tìm thấy vai trò", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                            Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Đăng nhập thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
     }
-}
