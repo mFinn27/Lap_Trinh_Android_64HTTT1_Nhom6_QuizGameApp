@@ -8,7 +8,7 @@
     android:id="@+id/main_topic_selection">
 
     <ImageButton
-        android:id="@+id/button_back"
+        android:id="@+id/btn_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -35,14 +35,13 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_topics"
-        android:layout_width="363dp"
-        android:layout_height="659dp"
-        android:layout_margin="20dp"
-        android:layout_marginTop="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintBottom_toTopOf="@id/fab_add_topic"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_title" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="8dp" />
 
     <!-- Admin Panel (Visible only for admins) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -51,7 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:src="@drawable/add_topic"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
