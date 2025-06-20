@@ -1,6 +1,6 @@
-    package com.example.quizapp.activity;
+package com.example.quizapp.activity;
 
-    import android.content.Intent;
+import android.content.Intent;
     import android.os.Bundle;
     import android.view.View;
     import android.widget.Button;
@@ -108,4 +108,5 @@
                             Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
-        }}
+        }
+    }

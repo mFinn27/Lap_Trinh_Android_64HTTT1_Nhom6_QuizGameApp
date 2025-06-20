@@ -56,7 +56,7 @@ public class QuizplayActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        
+
         tvQuestion = findViewById(R.id.tv_question);
         tvTimer = findViewById(R.id.tv_timer);
         tvHighScore = findViewById(R.id.tv_high_score);
