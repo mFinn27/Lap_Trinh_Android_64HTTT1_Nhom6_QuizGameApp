@@ -2,6 +2,9 @@ package com.example.quizapp.activity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,14 +25,26 @@ public class QuizplayActivity extends AppCompatActivity {
     private List<Question> questionList = new ArrayList<>();
     private String topicId;
 
+    private TextView tvQuestion;
+    private RadioButton rb1, rb2, rb3, rb4;
+    private RadioGroup rgAnswers;
+    private int currentIndex = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quizplay);
 
+        tvQuestion = findViewById(R.id.tv_question);
+        rb1 = findViewById(R.id.rb_answer1);
+        rb2 = findViewById(R.id.rb_answer2);
+        rb3 = findViewById(R.id.rb_answer3);
+        rb4 = findViewById(R.id.rb_answer4);
+        rgAnswers = findViewById(R.id.rg_answers);
+
         topicId = getIntent().getStringExtra("topicId");
         if (topicId == null) {
-            topicId = "history"; // Mặc định là history để test
+            topicId = "history";
         }
 
         loadQuestionsFromFirebase();
@@ -53,7 +68,6 @@ public class QuizplayActivity extends AppCompatActivity {
                             finish();
                         } else {
                             Toast.makeText(QuizplayActivity.this, "Tải được " + questionList.size() + " câu hỏi!", Toast.LENGTH_SHORT).show();
-                            // In câu hỏi ra Logcat để debug
                             for (int i = 0; i < questionList.size(); i++) {
                                 Question q = questionList.get(i);
                                 Log.d("QuizDebug", "Câu hỏi " + (i + 1) + ": " + q.getQuestion());
@@ -69,5 +83,26 @@ public class QuizplayActivity extends AppCompatActivity {
                         Log.e("Firebase", "Error: " + error.getMessage());
                     }
                 });
+    }
+
+    private void showNextQuestion() {
+        if (currentIndex >= questionList.size()) {
+            Toast.makeText(this, "Hết câu hỏi!", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        Question current = questionList.get(currentIndex);
+        tvQuestion.setText(current.getQuestion());
+
+        List<String> options = current.getOptions();
+        rb1.setText(options.get(0));
+        rb2.setText(options.get(1));
+        rb3.setText(options.get(2));
+        rb4.setText(options.get(3));
+
+        // Xóa lựa chọn trước đó
+        rgAnswers.clearCheck();
+        currentIndex++;
     }
 }
