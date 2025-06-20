@@ -139,14 +139,16 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Keep Going !!"
+        android:fontFamily="casual"
         android:gravity="center"
+        android:text="Keep Going !!"
+        android:textColor="@color/black"
         android:textSize="36dp"
         android:textStyle="bold"
-        android:textColor="@color/black"
-        android:fontFamily="casual"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="650dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rg_answers" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_game_over"

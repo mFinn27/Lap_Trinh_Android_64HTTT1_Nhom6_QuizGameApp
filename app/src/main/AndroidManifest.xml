@@ -20,7 +20,7 @@
             android:name=".activity.AddQuestionActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.QuizplayActivity"
+            android:name=".activity.MainActivity"
             android:exported="false" />
         <activity
             android:name=".activity.LeaderboardActivity"
@@ -38,7 +38,7 @@
             android:name=".activity.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".activity.QuizplayActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
