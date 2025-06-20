@@ -1,5 +1,6 @@
 package com.example.quizapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -22,5 +23,6 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        Intent  intent = new Intent(MainActivity.this, LoginActivity.class);
     }
 }
