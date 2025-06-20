@@ -30,7 +30,12 @@
             android:exported="false" />
         <activity
             android:name=".activity.MainMenuActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".activity.SignupActivity"
             android:exported="false" />
@@ -39,13 +44,6 @@
             android:exported="false" />
         <activity
             android:name=".activity.QuizplayActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
     </application>
-
 </manifest>
