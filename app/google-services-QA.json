@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "702203135331",
+    "firebase_url": "https://quizapp-game-3bc33-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "quizapp-game-3bc33",
+    "storage_bucket": "quizapp-game-3bc33.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702203135331:android:ab965b356a1a04a013ff56",
+        "android_client_info": {
+          "package_name": "com.example.quizapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAICBdU6UPMQImNvhpHqvAxXrhU-khlZo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
