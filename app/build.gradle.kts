@@ -46,4 +46,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.firebase:firebase-database")
+
+
 }
