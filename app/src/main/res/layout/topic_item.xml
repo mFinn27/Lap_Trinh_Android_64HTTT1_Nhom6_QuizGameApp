@@ -43,7 +43,7 @@
             android:layout_marginEnd="8dp"
             android:background="@null"
             android:src="@drawable/ic_add"
-            android:visibility="gone"
+            android:visibility="visible"
             android:contentDescription="Add Question" />
 
         <ImageButton
@@ -53,7 +53,7 @@
             android:layout_marginEnd="8dp"
             android:background="@null"
             android:src="@drawable/ic_edit"
-            android:visibility="gone"
+            android:visibility="visible"
             android:contentDescription="Edit Topic" />
 
         <ImageButton
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:src="@drawable/ic_delete"
-            android:visibility="gone"
+            android:visibility="visible"
             android:contentDescription="Delete Topic" />
 
     </LinearLayout>

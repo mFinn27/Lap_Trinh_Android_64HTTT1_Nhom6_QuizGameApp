@@ -2,6 +2,7 @@ package com.example.quizapp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
@@ -35,15 +36,18 @@ public class SelectionTopicActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_selection_topic);
 
-        btn_back = findViewById(R.id.button_back);
+        btn_back = findViewById(R.id.btn_back); // dùng id chính xác
         rvTopics = findViewById(R.id.rv_topics);
 
+        // RecyclerView setup
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
         topicAdapter = new TopicAdapter(topicList);
         rvTopics.setAdapter(topicAdapter);
 
+        // Sự kiện nút quay lại
         btn_back.setOnClickListener(v -> startActivity(new Intent(this, MainMenuActivity.class)));
 
+        // Load dữ liệu topic từ Firebase
         loadTopicsFromFirebase();
     }
 
@@ -70,7 +74,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý nếu cần
+                // TODO: xử lý lỗi nếu cần
             }
         });
     }
