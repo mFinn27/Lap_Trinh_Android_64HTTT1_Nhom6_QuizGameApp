@@ -1,7 +1,10 @@
 package com.example.quizapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -29,6 +32,7 @@ public class QuizplayActivity extends AppCompatActivity {
     private RadioButton rb1, rb2, rb3, rb4;
     private RadioGroup rgAnswers;
     private int currentIndex = 0;
+    private ImageButton btn_back;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,14 @@ public class QuizplayActivity extends AppCompatActivity {
         rb3 = findViewById(R.id.rb_answer3);
         rb4 = findViewById(R.id.rb_answer4);
         rgAnswers = findViewById(R.id.rg_answers);
+        btn_back = findViewById(R.id.button_back);
+
+        btn_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(QuizplayActivity.this, SelectionTopicActivity.class));
+            }
+        });
 
         topicId = getIntent().getStringExtra("topicId");
         if (topicId == null) {
@@ -83,26 +95,5 @@ public class QuizplayActivity extends AppCompatActivity {
                         Log.e("Firebase", "Error: " + error.getMessage());
                     }
                 });
-    }
-
-    private void showNextQuestion() {
-        if (currentIndex >= questionList.size()) {
-            Toast.makeText(this, "Hết câu hỏi!", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        Question current = questionList.get(currentIndex);
-        tvQuestion.setText(current.getQuestion());
-
-        List<String> options = current.getOptions();
-        rb1.setText(options.get(0));
-        rb2.setText(options.get(1));
-        rb3.setText(options.get(2));
-        rb4.setText(options.get(3));
-
-        // Xóa lựa chọn trước đó
-        rgAnswers.clearCheck();
-        currentIndex++;
     }
 }
