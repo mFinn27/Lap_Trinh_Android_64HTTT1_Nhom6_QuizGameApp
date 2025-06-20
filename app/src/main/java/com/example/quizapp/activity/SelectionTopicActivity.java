@@ -36,18 +36,15 @@ public class SelectionTopicActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_selection_topic);
 
-        btn_back = findViewById(R.id.btn_back); // dùng id chính xác
+        btn_back = findViewById(R.id.btn_back);
         rvTopics = findViewById(R.id.rv_topics);
 
-        // RecyclerView setup
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
         topicAdapter = new TopicAdapter(topicList);
         rvTopics.setAdapter(topicAdapter);
 
-        // Sự kiện nút quay lại
         btn_back.setOnClickListener(v -> startActivity(new Intent(this, MainMenuActivity.class)));
 
-        // Load dữ liệu topic từ Firebase
         loadTopicsFromFirebase();
     }
 
@@ -68,13 +65,10 @@ public class SelectionTopicActivity extends AppCompatActivity {
                         topicList.add(topic);
                     }
                 }
-
                 topicAdapter.notifyDataSetChanged();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // TODO: xử lý lỗi nếu cần
             }
         });
     }
