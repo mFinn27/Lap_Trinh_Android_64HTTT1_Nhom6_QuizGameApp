@@ -1,10 +1,12 @@
 package com.example.quizapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -44,6 +46,8 @@ public class QuizplayActivity extends AppCompatActivity {
     private Set<Integer> askedIndices = new HashSet<>();
     private String topicId;
 
+    private ImageButton btn_back;
+
     private CountDownTimer countDownTimer;
     private final long timePerQuestion = 20000;
 
@@ -69,6 +73,14 @@ public class QuizplayActivity extends AppCompatActivity {
         cardGameOver = findViewById(R.id.card_game_over);
         btnPlayAgain = findViewById(R.id.btn_play_again);
         btnBack = findViewById(R.id.btn_back_to_topics);
+        btn_back = findViewById(R.id.button_back);
+
+        btn_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(QuizplayActivity.this, MainMenuActivity.class));
+            }
+        });
 
         topicId = getIntent().getStringExtra("topicId");
         if (topicId == null) {
