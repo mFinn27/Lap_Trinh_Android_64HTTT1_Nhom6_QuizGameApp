@@ -5,30 +5,73 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.quizapp.R;
+import com.example.quizapp.adapter.TopicAdapter;
+import com.example.quizapp.model.Topic;
+import com.example.quizapp.utils.FirebaseUtils;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SelectionTopicActivity extends AppCompatActivity {
+
+    private ImageButton btn_back;
+    private RecyclerView rvTopics;
+    private TopicAdapter topicAdapter;
+    private List<Topic> topicList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_selection_topic);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_topic_selection), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        ImageButton btnBack = findViewById(R.id.button_back);
-        btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(SelectionTopicActivity.this, MainMenuActivity.class);
-            startActivity(intent);
+        btn_back = findViewById(R.id.button_back);
+        rvTopics = findViewById(R.id.rv_topics);
+
+        rvTopics.setLayoutManager(new LinearLayoutManager(this));
+        topicAdapter = new TopicAdapter(topicList);
+        rvTopics.setAdapter(topicAdapter);
+
+        btn_back.setOnClickListener(v -> startActivity(new Intent(this, MainMenuActivity.class)));
+
+        loadTopicsFromFirebase();
+    }
+
+    private void loadTopicsFromFirebase() {
+        DatabaseReference topicsRef = FirebaseUtils.getDatabase().getReference("topics");
+
+        topicsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                topicList.clear();
+
+                for (DataSnapshot topicSnap : snapshot.getChildren()) {
+                    String topicId = topicSnap.getKey();
+                    String name = topicSnap.child("name").getValue(String.class);
+
+                    if (topicId != null && name != null) {
+                        Topic topic = new Topic(topicId, name);
+                        topicList.add(topic);
+                    }
+                }
+
+                topicAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý nếu cần
+            }
         });
     }
 }
