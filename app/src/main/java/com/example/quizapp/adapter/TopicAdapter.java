@@ -23,7 +23,7 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
     private List<Topic> topics;
     private Context context;
 
-    public TopicAdapter(List<Topic> topics) {
+    public TopicAdapter(Context context, List<Topic> topics) {
         this.topics = topics;
         this.context = context;
     }

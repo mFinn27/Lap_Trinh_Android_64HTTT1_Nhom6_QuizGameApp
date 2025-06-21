@@ -43,7 +43,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
         rvTopics = findViewById(R.id.rv_topics);
 
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
-        topicAdapter = new TopicAdapter(topicList);
+        topicAdapter = new TopicAdapter(SelectionTopicActivity.this, topicList);
         rvTopics.setAdapter(topicAdapter);
 
         btn_back.setOnClickListener(v -> startActivity(new Intent(this, MainMenuActivity.class)));
