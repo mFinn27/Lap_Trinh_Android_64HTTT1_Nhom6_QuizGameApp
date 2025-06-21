@@ -28,10 +28,19 @@ public class MainMenuActivity extends AppCompatActivity {
 
         Button btnChooseTopic = findViewById(R.id.btn_choose_topic);
         Button btnLeaderboard = findViewById(R.id.btn_leaderboard);
+        Button btnLogout = findViewById(R.id.btn_logout);
 
         btnChooseTopic.setOnClickListener(v -> {
             Intent intent = new Intent(MainMenuActivity.this, SelectionTopicActivity.class);
             startActivity(intent);
+        });
+
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainMenuActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
         });
 
         btnLeaderboard.setOnClickListener(new View.OnClickListener() {
