@@ -47,21 +47,17 @@ public class SelectionTopicActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_selection_topic);
-
-        // Khởi tạo views
+        
         btnBack = findViewById(R.id.btn_back);
         rvTopics = findViewById(R.id.rv_topics);
         fabAddTopic = findViewById(R.id.fab_add_topic);
 
-        // Cấu hình RecyclerView
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
         topicAdapter = new TopicAdapter(this,topicList);
         rvTopics.setAdapter(topicAdapter);
 
-        // Khởi tạo Firebase reference
         topicsRef = FirebaseUtils.getDatabase().getReference("topics");
 
-        // Xử lý sự kiện click
         btnBack.setOnClickListener(v -> {
             startActivity(new Intent(this, MainMenuActivity.class));
             finish();
@@ -69,7 +65,6 @@ public class SelectionTopicActivity extends AppCompatActivity {
 
         fabAddTopic.setOnClickListener(v -> showAddTopicDialog());
 
-        // Load danh sách topics
         loadTopicsFromFirebase();
     }
 
@@ -99,24 +94,20 @@ public class SelectionTopicActivity extends AppCompatActivity {
     }
 
     private void showAddTopicDialog() {
-        // Inflate layout cho dialog
+
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_add_topic, null);
 
-        // Tạo dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         builder.setTitle("Add New Topic");
 
-        // Ánh xạ views trong dialog
         EditText etTopicName = dialogView.findViewById(R.id.et_topic_name);
         Button btnSave = dialogView.findViewById(R.id.btn_save);
         Button btnCancel = dialogView.findViewById(R.id.btn_cancel);
 
-        // Tạo và hiển thị dialog
         AlertDialog dialog = builder.create();
 
-        // Xử lý nút Save
         btnSave.setOnClickListener(v -> {
             String topicName = etTopicName.getText().toString().trim();
             if (TextUtils.isEmpty(topicName)) {
@@ -124,14 +115,12 @@ public class SelectionTopicActivity extends AppCompatActivity {
                 return;
             }
 
-            // Tạo topic mới
             String topicId = topicsRef.push().getKey();
             if (topicId == null) {
                 Toast.makeText(this, "Error generating topic ID", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Lưu vào Firebase
             topicsRef.child(topicId).child("name").setValue(topicName)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(SelectionTopicActivity.this,
@@ -146,7 +135,6 @@ public class SelectionTopicActivity extends AppCompatActivity {
                     });
         });
 
-        // Xử lý nút Cancel
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
