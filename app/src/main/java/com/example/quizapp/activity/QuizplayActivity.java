@@ -88,7 +88,12 @@ public class QuizplayActivity extends AppCompatActivity {
         }
 
         btnPlayAgain.setOnClickListener(v -> restartGame());
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(QuizplayActivity.this, SelectionTopicActivity.class));
+            }
+        });
 
         loadQuestionsFromFirebase();
     }

@@ -15,6 +15,18 @@ public class Question {
         this.correctAnswer = correctAnswer;
     }
 
+    public void setQuestion(String question) {
+        this.question = question;
+    }
+
+    public void setCorrectAnswer(int correctAnswer) {
+        this.correctAnswer = correctAnswer;
+    }
+
+    public void setOptions(List<String> options) {
+        this.options = options;
+    }
+
     public String getQuestion() {
         return question;
     }
