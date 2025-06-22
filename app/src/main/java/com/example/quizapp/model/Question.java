@@ -1,4 +1,5 @@
 package com.example.quizapp.model;
+
 import java.util.List;
 
 public class Question {

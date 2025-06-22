@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.quizapp.R;
 import com.example.quizapp.activity.AddQuestionActivity;
 import com.example.quizapp.activity.EditTopicActivity;
+import com.example.quizapp.activity.QuizplayActivity;
 import com.example.quizapp.model.Topic;
 
 import java.util.List;
@@ -58,6 +59,14 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
         String iconName = topic.getIcon() != null ? topic.getIcon() : "ic_topic_animal";
         int iconResId = context.getResources().getIdentifier(iconName, "drawable", context.getPackageName());
         holder.ivTopicIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_topic_animal);
+
+        // Xử lý click vào item để chơi quiz
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, QuizplayActivity.class);
+            intent.putExtra("topicId", topic.getId());
+            intent.putExtra("topicName", topic.getName());
+            context.startActivity(intent);
+        });
 
         // Xử lý nút Add Question
         holder.btnAdd.setOnClickListener(v -> {

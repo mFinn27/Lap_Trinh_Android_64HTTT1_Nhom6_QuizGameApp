@@ -28,9 +28,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
 
 public class QuizplayActivity extends AppCompatActivity {
 
@@ -39,17 +38,16 @@ public class QuizplayActivity extends AppCompatActivity {
     private RadioGroup rgAnswers;
     private CardView cardGameOver;
     private Button btnPlayAgain, btnBack;
-
+    private ImageButton btnBackMain;
     private List<Question> questionList = new ArrayList<>();
     private int currentIndex = 0;
     private int correctCount = 0;
-    private Set<Integer> askedIndices = new HashSet<>();
+    private int totalQuestionsAnswered = 0;
     private String topicId;
-
-    private ImageButton btn_back;
-
     private CountDownTimer countDownTimer;
-    private final long timePerQuestion = 20000;
+    private static final long TIME_PER_QUESTION = 20000; // 20 giây mỗi câu hỏi
+    private static final String TAG = "QuizplayActivity";
+    private boolean isActivityActive = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +59,7 @@ public class QuizplayActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Khởi tạo views
         tvQuestion = findViewById(R.id.tv_question);
         tvTimer = findViewById(R.id.tv_timer);
         tvHighScore = findViewById(R.id.tv_high_score);
@@ -73,160 +72,239 @@ public class QuizplayActivity extends AppCompatActivity {
         cardGameOver = findViewById(R.id.card_game_over);
         btnPlayAgain = findViewById(R.id.btn_play_again);
         btnBack = findViewById(R.id.btn_back_to_topics);
-        btn_back = findViewById(R.id.button_back);
+        btnBackMain = findViewById(R.id.button_back);
 
-        btn_back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(QuizplayActivity.this, MainMenuActivity.class));
-            }
-        });
-
+        // Lấy topicId từ Intent
         topicId = getIntent().getStringExtra("topicId");
         if (topicId == null) {
-            topicId = "history";
+            Log.e(TAG, "No topicId provided in Intent");
+            Toast.makeText(this, "Error: Topic not found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
 
+        // Xử lý các nút
+        btnBackMain.setOnClickListener(v -> finish());
         btnPlayAgain.setOnClickListener(v -> restartGame());
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(QuizplayActivity.this, SelectionTopicActivity.class));
-            }
+        btnBack.setOnClickListener(v -> {
+            Intent intent = new Intent(QuizplayActivity.this, SelectionTopicActivity.class);
+            startActivity(intent);
+            finish();
         });
 
+        // Tải câu hỏi
         loadQuestionsFromFirebase();
     }
 
     private void loadQuestionsFromFirebase() {
-        FirebaseUtils.getQuestionsRef(topicId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        questionList.clear();
-                        for (DataSnapshot ds : snapshot.getChildren()) {
-                            Question q = ds.getValue(Question.class);
-                            if (q != null && q.getOptions() != null && q.getOptions().size() >= 4) {
-                                questionList.add(q);
-                            }
-                        }
-
-                        if (questionList.isEmpty()) {
-                            Toast.makeText(QuizplayActivity.this, "Không có câu hỏi trong chủ đề này!", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            Collections.shuffle(questionList);
-                            currentIndex = 0;
-                            correctCount = 0;
-                            askedIndices.clear();
-                            showNextQuestion();
+        FirebaseUtils.getQuestionsRef(topicId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!isActivityActive) return;
+                questionList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    String questionText = ds.child("question").getValue(String.class);
+                    Long correctAnswer = ds.child("correctAnswer").getValue(Long.class);
+                    List<String> options = new ArrayList<>();
+                    DataSnapshot optionsSnap = ds.child("options");
+                    // Tải options theo thứ tự 0, 1, 2, 3
+                    for (int i = 0; i < 4; i++) {
+                        String optionText = optionsSnap.child(String.valueOf(i)).getValue(String.class);
+                        if (optionText != null) {
+                            options.add(optionText);
                         }
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(QuizplayActivity.this, "Lỗi tải câu hỏi", Toast.LENGTH_SHORT).show();
-                        Log.e("Firebase", "Error: " + error.getMessage());
+                    if (questionText != null && correctAnswer != null && options.size() == 4 && correctAnswer >= 0 && correctAnswer <= 3) {
+                        questionList.add(new Question(questionText, options, correctAnswer.intValue()));
+                        Log.d(TAG, "Loaded question: " + questionText + ", correctAnswer: " + correctAnswer + ", options: " + options);
+                    } else {
+                        Log.w(TAG, "Invalid question data for key: " + ds.getKey() + ", question: " + questionText + ", correctAnswer: " + correctAnswer + ", options size: " + options.size());
                     }
-                });
+                }
+                if (questionList.isEmpty()) {
+                    Log.e(TAG, "No valid questions found for topic: " + topicId);
+                    Toast.makeText(QuizplayActivity.this, "Không có câu hỏi trong chủ đề này!", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Log.d(TAG, "Loaded " + questionList.size() + " questions");
+                    Collections.shuffle(questionList);
+                    currentIndex = 0;
+                    correctCount = 0;
+                    totalQuestionsAnswered = 0;
+                    showNextQuestion();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (!isActivityActive) return;
+                Log.e(TAG, "Firebase error: " + error.getMessage());
+                Toast.makeText(QuizplayActivity.this, "Lỗi tải câu hỏi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
     }
 
     private void showNextQuestion() {
+        if (!isActivityActive) return;
         if (currentIndex >= questionList.size()) {
+            Log.d(TAG, "No more questions, showing game over");
             showGameOver();
             return;
         }
 
-        Question current = questionList.get(currentIndex);
-        tvQuestion.setText(current.getQuestion());
-
-        List<String> options = current.getOptions();
-        rb1.setText(options.get(0));
-        rb2.setText(options.get(1));
-        rb3.setText(options.get(2));
-        rb4.setText(options.get(3));
-
-        rgAnswers.setOnCheckedChangeListener(null);
-        rgAnswers.clearCheck();
-        enableOptions(true);
-
-        startTimer();
-        rgAnswers.setOnCheckedChangeListener((group, checkedId) -> {
-            if (countDownTimer != null) {
-                countDownTimer.cancel();
-                countDownTimer = null;
+        try {
+            Question current = questionList.get(currentIndex);
+            if (current.getQuestion() == null || current.getOptions() == null || current.getOptions().size() != 4) {
+                Log.e(TAG, "Invalid question data at index " + currentIndex);
+                showGameOver();
+                return;
             }
-            checkAnswer(checkedId, current.getCorrectAnswer());
-        });
+            tvQuestion.setText(current.getQuestion());
+            List<String> options = current.getOptions();
+            rb1.setText(options.get(0));
+            rb2.setText(options.get(1));
+            rb3.setText(options.get(2));
+            rb4.setText(options.get(3));
+
+            rgAnswers.setOnCheckedChangeListener(null);
+            rgAnswers.clearCheck();
+            enableOptions(true);
+
+            startTimer();
+            rgAnswers.setOnCheckedChangeListener((group, checkedId) -> {
+                if (!isActivityActive) return;
+                if (countDownTimer != null) {
+                    countDownTimer.cancel();
+                    countDownTimer = null;
+                }
+                checkAnswer(checkedId, current.getCorrectAnswer());
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error displaying question at index " + currentIndex, e);
+            Toast.makeText(this, "Lỗi hiển thị câu hỏi", Toast.LENGTH_SHORT).show();
+            showGameOver();
+        }
     }
 
     private void startTimer() {
-        countDownTimer = new CountDownTimer(timePerQuestion, 1000) {
+        if (!isActivityActive) return;
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+        countDownTimer = new CountDownTimer(TIME_PER_QUESTION, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                tvTimer.setText("00:" + millisUntilFinished / 1000);
+                if (!isActivityActive) return;
+                tvTimer.setText(String.format(Locale.getDefault(), "%02d:%02d",
+                        millisUntilFinished / 1000 / 60, millisUntilFinished / 1000 % 60));
             }
 
             @Override
             public void onFinish() {
+                if (!isActivityActive) return;
+                Log.d(TAG, "Time's up for question " + currentIndex);
                 Toast.makeText(QuizplayActivity.this, "Hết thời gian!", Toast.LENGTH_SHORT).show();
-                showGameOver();
+                checkAnswer(-1, questionList.get(currentIndex).getCorrectAnswer());
             }
         }.start();
     }
 
     private void checkAnswer(int checkedId, int correctIndex) {
+        if (!isActivityActive) return;
+        totalQuestionsAnswered++;
         int selectedIndex = -1;
-
         if (checkedId == R.id.rb_answer1) selectedIndex = 0;
         else if (checkedId == R.id.rb_answer2) selectedIndex = 1;
         else if (checkedId == R.id.rb_answer3) selectedIndex = 2;
         else if (checkedId == R.id.rb_answer4) selectedIndex = 3;
 
-        if (selectedIndex == correctIndex) {
-            correctCount++;
-            currentIndex++;
-            showNextQuestion();
-        } else {
+        try {
+            Log.d(TAG, "Selected index: " + selectedIndex + ", Correct index: " + correctIndex);
+            if (selectedIndex == correctIndex) {
+                correctCount++;
+                Log.d(TAG, "Correct answer, moving to next question. Current score: " + correctCount);
+                Toast.makeText(this, "Đúng!", Toast.LENGTH_SHORT).show();
+                currentIndex++;
+                showNextQuestion();
+            } else {
+                String correctOption = questionList.get(currentIndex).getOptions().get(correctIndex);
+                Log.d(TAG, "Wrong answer, showing game over. Correct answer: " + correctOption);
+                Toast.makeText(this, "Sai! Đáp án đúng: " + correctOption, Toast.LENGTH_SHORT).show();
+                showGameOver();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking answer at index " + currentIndex, e);
+            Toast.makeText(this, "Lỗi kiểm tra đáp án", Toast.LENGTH_SHORT).show();
             showGameOver();
         }
     }
+
     private void showGameOver() {
+        if (!isActivityActive) return;
         if (countDownTimer != null) {
             countDownTimer.cancel();
             countDownTimer = null;
         }
-        if (cardGameOver.getVisibility() != View.VISIBLE) {
-            cardGameOver.setVisibility(View.VISIBLE);
-            tvHighScore.setText("Điểm: " + correctCount);
-            tvQuestionsAnswered.setText("Câu đúng: " + correctCount);
-        }
+        cardGameOver.setVisibility(View.VISIBLE);
+        tvHighScore.setText("Điểm: " + correctCount*10);
+        tvQuestionsAnswered.setText("Số câu trả lời: " + totalQuestionsAnswered);
         enableOptions(false);
         rgAnswers.setOnCheckedChangeListener(null);
+        Log.d(TAG, "Game over displayed. Score: " + correctCount + ", Questions answered: " + totalQuestionsAnswered);
     }
 
     private void enableOptions(boolean enable) {
-        for (int i = 0; i < rgAnswers.getChildCount(); i++) {
-            rgAnswers.getChildAt(i).setEnabled(enable);
-        }
+        if (!isActivityActive) return;
+        rb1.setEnabled(enable);
+        rb2.setEnabled(enable);
+        rb3.setEnabled(enable);
+        rb4.setEnabled(enable);
     }
 
     private void restartGame() {
+        if (!isActivityActive) return;
         if (countDownTimer != null) {
             countDownTimer.cancel();
             countDownTimer = null;
         }
-        if (cardGameOver.getVisibility() == View.VISIBLE) {
-            cardGameOver.setVisibility(View.GONE);
-        }
+        cardGameOver.setVisibility(View.GONE);
         currentIndex = 0;
         correctCount = 0;
-        askedIndices.clear();
+        totalQuestionsAnswered = 0;
         Collections.shuffle(questionList);
         rgAnswers.clearCheck();
         enableOptions(true);
-
-        rgAnswers.setOnCheckedChangeListener(null);
         showNextQuestion();
+        Log.d(TAG, "Game restarted");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isActivityActive = false;
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isActivityActive = true;
+        if (questionList != null && !questionList.isEmpty() && currentIndex < questionList.size()) {
+            showNextQuestion();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        isActivityActive = false;
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
+        }
     }
 }
