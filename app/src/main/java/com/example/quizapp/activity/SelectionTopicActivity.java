@@ -63,7 +63,6 @@ public class SelectionTopicActivity extends AppCompatActivity {
         topicAdapter = new TopicAdapter(this,topicList);
         rvTopics.setAdapter(topicAdapter);
 
-        btn_back.setOnClickListener(v -> startActivity(new Intent(this, MainMenuActivity.class)));
         checkUserRoleAndLoadTopics();
         topicsRef = FirebaseUtils.getDatabase().getReference("topics");
 
@@ -141,7 +140,8 @@ public class SelectionTopicActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     });
         });
-
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
     private void checkUserRoleAndLoadTopics() {
 
@@ -166,8 +166,5 @@ public class SelectionTopicActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
-        btnCancel.setOnClickListener(v -> dialog.dismiss());
-
-        dialog.show();
     }
 }
