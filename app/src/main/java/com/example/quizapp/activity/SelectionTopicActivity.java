@@ -18,6 +18,9 @@ import com.example.quizapp.R;
 import com.example.quizapp.adapter.TopicAdapter;
 import com.example.quizapp.model.Topic;
 import com.example.quizapp.utils.FirebaseUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -32,6 +35,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
     private RecyclerView rvTopics;
     private TopicAdapter topicAdapter;
     private List<Topic> topicList = new ArrayList<>();
+    private FloatingActionButton fab_add_topic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +45,14 @@ public class SelectionTopicActivity extends AppCompatActivity {
 
         btn_back = findViewById(R.id.btn_back);
         rvTopics = findViewById(R.id.rv_topics);
+        fab_add_topic = findViewById(R.id.fab_add_topic);
 
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
         topicAdapter = new TopicAdapter(SelectionTopicActivity.this, topicList);
         rvTopics.setAdapter(topicAdapter);
 
         btn_back.setOnClickListener(v -> startActivity(new Intent(this, MainMenuActivity.class)));
-
-        loadTopicsFromFirebase();
+        checkUserRoleAndLoadTopics();
     }
 
     private void loadTopicsFromFirebase() {
@@ -68,13 +72,36 @@ public class SelectionTopicActivity extends AppCompatActivity {
                         topicList.add(topic);
                     }
                 }
-
                 topicAdapter.notifyDataSetChanged();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
+            }
+        });
+
+    }
+    private void checkUserRoleAndLoadTopics() {
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        DatabaseReference userRef = FirebaseUtils.getDatabase().getReference("users").child(currentUser.getUid());
+
+        userRef.child("role").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String role = snapshot.getValue(String.class);
+                boolean isAdmin = "admin".equalsIgnoreCase(role);
+                topicAdapter.setAdmin(isAdmin);
+                if (fab_add_topic != null) {
+                    fab_add_topic.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+                }
+                rvTopics.setAdapter(topicAdapter);
+                loadTopicsFromFirebase();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
             }
         });
     }
