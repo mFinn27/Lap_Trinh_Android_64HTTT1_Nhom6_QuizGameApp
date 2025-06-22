@@ -10,29 +10,40 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.quizapp.R;
 import com.example.quizapp.model.LeaderboardEntry;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
 public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.ViewHolder> {
     private final List<LeaderboardEntry> entries;
+    private final String currentUserId;
 
     public LeaderboardAdapter(List<LeaderboardEntry> entries) {
         this.entries = entries;
+        this.currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : "";
     }
 
     @NonNull
     @Override
-    public LeaderboardAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.activity_leaderboard, parent, false);
+                .inflate(R.layout.leaderboard_item, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull LeaderboardAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LeaderboardEntry entry = entries.get(position);
+        holder.tvRank.setText(String.valueOf(position + 1));
         holder.tvUsername.setText(entry.username);
-        holder.tvScore.setText(entry.score + " điểm");
+        holder.tvScore.setText(entry.highScore + " điểm");
+        if (entry.uid != null && entry.uid.equals(currentUserId)) {
+            holder.itemView.setBackgroundColor(0xFFE6E6FA);
+        } else {
+            holder.itemView.setBackgroundColor(0xFFFFFFFF);
+        }
     }
 
     @Override
@@ -41,10 +52,11 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvUsername, tvScore;
+        TextView tvRank, tvUsername, tvScore;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            tvRank = itemView.findViewById(R.id.tv_rank);
             tvUsername = itemView.findViewById(R.id.tv_username);
             tvScore = itemView.findViewById(R.id.tv_score);
         }

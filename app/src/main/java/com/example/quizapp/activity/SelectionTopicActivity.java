@@ -25,6 +25,10 @@ import com.example.quizapp.adapter.TopicAdapter;
 import com.example.quizapp.model.Topic;
 import com.example.quizapp.utils.FirebaseUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,6 +43,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
     private RecyclerView rvTopics;
     private TopicAdapter topicAdapter;
     private List<Topic> topicList = new ArrayList<>();
+    private FloatingActionButton fab_add_topic;
     private FloatingActionButton fabAddTopic;
     private DatabaseReference topicsRef;
 
@@ -47,15 +52,18 @@ public class SelectionTopicActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_selection_topic);
-        
+      
         btnBack = findViewById(R.id.btn_back);
         rvTopics = findViewById(R.id.rv_topics);
+
+        fab_add_topic = findViewById(R.id.fab_add_topic);
         fabAddTopic = findViewById(R.id.fab_add_topic);
 
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
         topicAdapter = new TopicAdapter(this,topicList);
         rvTopics.setAdapter(topicAdapter);
 
+        checkUserRoleAndLoadTopics();
         topicsRef = FirebaseUtils.getDatabase().getReference("topics");
 
         btnBack.setOnClickListener(v -> {
@@ -83,7 +91,6 @@ public class SelectionTopicActivity extends AppCompatActivity {
                 }
                 topicAdapter.notifyDataSetChanged();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SelectionTopicActivity.this,
@@ -94,7 +101,6 @@ public class SelectionTopicActivity extends AppCompatActivity {
     }
 
     private void showAddTopicDialog() {
-
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_add_topic, null);
 
@@ -134,9 +140,31 @@ public class SelectionTopicActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     });
         });
-
         btnCancel.setOnClickListener(v -> dialog.dismiss());
-
         dialog.show();
+    }
+    private void checkUserRoleAndLoadTopics() {
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        DatabaseReference userRef = FirebaseUtils.getDatabase().getReference("users").child(currentUser.getUid());
+
+        userRef.child("role").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String role = snapshot.getValue(String.class);
+                boolean isAdmin = "admin".equalsIgnoreCase(role);
+                topicAdapter.setAdmin(isAdmin);
+                if (fab_add_topic != null) {
+                    fab_add_topic.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+                }
+                rvTopics.setAdapter(topicAdapter);
+                loadTopicsFromFirebase();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
     }
 }
