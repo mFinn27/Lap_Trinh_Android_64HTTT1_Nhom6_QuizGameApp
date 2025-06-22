@@ -25,6 +25,10 @@ import com.example.quizapp.adapter.TopicAdapter;
 import com.example.quizapp.model.Topic;
 import com.example.quizapp.utils.FirebaseUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,6 +43,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
     private RecyclerView rvTopics;
     private TopicAdapter topicAdapter;
     private List<Topic> topicList = new ArrayList<>();
+    private FloatingActionButton fab_add_topic;
     private FloatingActionButton fabAddTopic;
     private DatabaseReference topicsRef;
 
@@ -48,20 +53,20 @@ public class SelectionTopicActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_selection_topic);
 
-        // Khởi tạo views
         btnBack = findViewById(R.id.btn_back);
         rvTopics = findViewById(R.id.rv_topics);
+
+        fab_add_topic = findViewById(R.id.fab_add_topic);
         fabAddTopic = findViewById(R.id.fab_add_topic);
 
-        // Cấu hình RecyclerView
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
         topicAdapter = new TopicAdapter(this,topicList);
         rvTopics.setAdapter(topicAdapter);
 
-        // Khởi tạo Firebase reference
+        btn_back.setOnClickListener(v -> startActivity(new Intent(this, MainMenuActivity.class)));
+        checkUserRoleAndLoadTopics();
         topicsRef = FirebaseUtils.getDatabase().getReference("topics");
 
-        // Xử lý sự kiện click
         btnBack.setOnClickListener(v -> {
             startActivity(new Intent(this, MainMenuActivity.class));
             finish();
@@ -69,7 +74,6 @@ public class SelectionTopicActivity extends AppCompatActivity {
 
         fabAddTopic.setOnClickListener(v -> showAddTopicDialog());
 
-        // Load danh sách topics
         loadTopicsFromFirebase();
     }
 
@@ -88,7 +92,6 @@ public class SelectionTopicActivity extends AppCompatActivity {
                 }
                 topicAdapter.notifyDataSetChanged();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SelectionTopicActivity.this,
@@ -99,24 +102,19 @@ public class SelectionTopicActivity extends AppCompatActivity {
     }
 
     private void showAddTopicDialog() {
-        // Inflate layout cho dialog
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_add_topic, null);
 
-        // Tạo dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         builder.setTitle("Add New Topic");
 
-        // Ánh xạ views trong dialog
         EditText etTopicName = dialogView.findViewById(R.id.et_topic_name);
         Button btnSave = dialogView.findViewById(R.id.btn_save);
         Button btnCancel = dialogView.findViewById(R.id.btn_cancel);
 
-        // Tạo và hiển thị dialog
         AlertDialog dialog = builder.create();
 
-        // Xử lý nút Save
         btnSave.setOnClickListener(v -> {
             String topicName = etTopicName.getText().toString().trim();
             if (TextUtils.isEmpty(topicName)) {
@@ -124,14 +122,12 @@ public class SelectionTopicActivity extends AppCompatActivity {
                 return;
             }
 
-            // Tạo topic mới
             String topicId = topicsRef.push().getKey();
             if (topicId == null) {
                 Toast.makeText(this, "Error generating topic ID", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Lưu vào Firebase
             topicsRef.child(topicId).child("name").setValue(topicName)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(SelectionTopicActivity.this,
@@ -146,7 +142,30 @@ public class SelectionTopicActivity extends AppCompatActivity {
                     });
         });
 
-        // Xử lý nút Cancel
+    }
+    private void checkUserRoleAndLoadTopics() {
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        DatabaseReference userRef = FirebaseUtils.getDatabase().getReference("users").child(currentUser.getUid());
+
+        userRef.child("role").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String role = snapshot.getValue(String.class);
+                boolean isAdmin = "admin".equalsIgnoreCase(role);
+                topicAdapter.setAdmin(isAdmin);
+                if (fab_add_topic != null) {
+                    fab_add_topic.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+                }
+                rvTopics.setAdapter(topicAdapter);
+                loadTopicsFromFirebase();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();

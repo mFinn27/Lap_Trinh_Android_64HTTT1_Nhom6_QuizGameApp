@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,6 +46,15 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
             intent.putExtra("topicId", topics.get(position).getId());
             context.startActivity(intent);
         });
+        if (isAdmin) {
+            holder.btnAdd.setVisibility(View.VISIBLE);
+            holder.btnEdit.setVisibility(View.VISIBLE);
+            holder.btnAdd.setVisibility(View.VISIBLE);
+        } else {
+            holder.btnEdit.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.GONE);
+            holder.btnAdd.setVisibility(View.GONE);
+        }
     }
 
 
@@ -56,13 +66,20 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
     public static class TopicViewHolder extends RecyclerView.ViewHolder {
         ImageView ivTopicIcon;
         TextView tvTopicName;
-        ImageButton btnAdd;
+        ImageButton btnAdd,btnEdit,btnDelete;
 
         public TopicViewHolder(@NonNull View itemView) {
             super(itemView);
             ivTopicIcon = itemView.findViewById(R.id.iv_topic_icon);
             tvTopicName = itemView.findViewById(R.id.tv_topic_name);
             btnAdd = itemView.findViewById(R.id.btn_add_question);
+            btnDelete = itemView.findViewById(R.id.btn_delete_topic);
+            btnEdit = itemView.findViewById(R.id.btn_edit_topic);
         }
+    }
+    private boolean isAdmin = false;
+    public void setAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+        notifyDataSetChanged();
     }
 }
