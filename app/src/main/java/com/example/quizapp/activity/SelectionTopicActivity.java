@@ -43,7 +43,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
     private RecyclerView rvTopics;
     private TopicAdapter topicAdapter;
     private List<Topic> topicList = new ArrayList<>();
-    private FloatingActionButton fabAddTopic; // Sửa: Chỉ giữ một biến
+    private FloatingActionButton fabAddTopic;
     private DatabaseReference topicsRef;
 
     @Override
@@ -54,13 +54,20 @@ public class SelectionTopicActivity extends AppCompatActivity {
 
         btnBack = findViewById(R.id.btn_back);
         rvTopics = findViewById(R.id.rv_topics);
-        fabAddTopic = findViewById(R.id.fab_add_topic); // Sửa: Chỉ dùng fabAddTopic
+        fabAddTopic = findViewById(R.id.fab_add_topic);
 
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
         topicAdapter = new TopicAdapter(this, topicList, new TopicAdapter.OnTopicActionListener() {
             @Override
             public void onDeleteTopic(Topic topic) {
                 showDeleteConfirmationDialog(topic);
+            }
+
+            @Override
+            public void onEditTopic(Topic topic) {
+                Intent intent = new Intent(SelectionTopicActivity.this, EditTopicActivity.class);
+                intent.putExtra("topic", topic);
+                startActivity(intent);
             }
         });
         rvTopics.setAdapter(topicAdapter);
@@ -85,8 +92,9 @@ public class SelectionTopicActivity extends AppCompatActivity {
                 for (DataSnapshot topicSnap : snapshot.getChildren()) {
                     String topicId = topicSnap.getKey();
                     String name = topicSnap.child("name").getValue(String.class);
+                    String icon = topicSnap.child("icon").getValue(String.class);
                     if (topicId != null && name != null) {
-                        Topic topic = new Topic(topicId, name);
+                        Topic topic = new Topic(topicId, name, icon != null ? icon : "ic_topic_animal");
                         topicList.add(topic);
                     }
                 }
@@ -95,7 +103,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SelectionTopicActivity.this,
-                        "Lỗi không tải được chủ đề: " + error.getMessage(),
+                        "Failed to load topics: " + error.getMessage(),
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -118,26 +126,27 @@ public class SelectionTopicActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> {
             String topicName = etTopicName.getText().toString().trim();
             if (TextUtils.isEmpty(topicName)) {
-                etTopicName.setError("Chưa nhập tên chủ đề");
+                etTopicName.setError("Please enter topic name");
                 return;
             }
 
             String topicId = topicsRef.push().getKey();
             if (topicId == null) {
-                Toast.makeText(this, "Không thấy ID", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error generating topic ID", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            topicsRef.child(topicId).child("name").setValue(topicName)
+            Topic newTopic = new Topic(topicId, topicName, "ic_topic_animal");
+            topicsRef.child(topicId).setValue(newTopic)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(SelectionTopicActivity.this,
-                                "Thêm chủ đề thành công",
+                                "Topic added successfully",
                                 Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(SelectionTopicActivity.this,
-                                "Lỗi không thêm được chủ đề: " + e.getMessage(),
+                                "Failed to add topic: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     });
         });
@@ -168,7 +177,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SelectionTopicActivity.this,
-                        "Lỗi phân quyền: " + error.getMessage(),
+                        "Error checking role: " + error.getMessage(),
                         Toast.LENGTH_SHORT).show();
                 topicAdapter.setAdmin(false);
                 fabAddTopic.setVisibility(View.GONE);
@@ -180,11 +189,11 @@ public class SelectionTopicActivity extends AppCompatActivity {
     private void showDeleteConfirmationDialog(Topic topic) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Topic")
-                .setMessage("Bạn có chắc chắn xóa chủ đề '" + topic.getName() + "'? ")
-                .setPositiveButton("Xóa", (dialog, which) -> {
+                .setMessage("Are you sure you want to delete the topic '" + topic.getName() + "'? This will also delete all related questions.")
+                .setPositiveButton("Delete", (dialog, which) -> {
                     deleteTopicFromFirebase(topic);
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
@@ -192,12 +201,12 @@ public class SelectionTopicActivity extends AppCompatActivity {
         topicsRef.child(topic.getId()).removeValue()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(SelectionTopicActivity.this,
-                            "Đã xóa chủ đề",
+                            "Topic deleted successfully",
                             Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(SelectionTopicActivity.this,
-                            "Lỗi xóa chủ đề: " + e.getMessage(),
+                            "Failed to delete topic: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
                 });
     }

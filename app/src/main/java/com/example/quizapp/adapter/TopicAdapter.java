@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.quizapp.R;
 import com.example.quizapp.activity.AddQuestionActivity;
+import com.example.quizapp.activity.EditTopicActivity;
 import com.example.quizapp.model.Topic;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
 
     public interface OnTopicActionListener {
         void onDeleteTopic(Topic topic);
+        void onEditTopic(Topic topic);
     }
 
     public TopicAdapter(Context context, List<Topic> topics, OnTopicActionListener listener) {
@@ -52,11 +54,23 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
         Topic topic = topics.get(position);
         holder.tvTopicName.setText(topic.getName());
 
+        // Hiển thị icon
+        String iconName = topic.getIcon() != null ? topic.getIcon() : "ic_topic_animal";
+        int iconResId = context.getResources().getIdentifier(iconName, "drawable", context.getPackageName());
+        holder.ivTopicIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_topic_animal);
+
         // Xử lý nút Add Question
         holder.btnAdd.setOnClickListener(v -> {
             Intent intent = new Intent(context, AddQuestionActivity.class);
             intent.putExtra("topicId", topic.getId());
             context.startActivity(intent);
+        });
+
+        // Xử lý nút Edit Topic
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onEditTopic(topic);
+            }
         });
 
         // Xử lý nút Delete Topic
