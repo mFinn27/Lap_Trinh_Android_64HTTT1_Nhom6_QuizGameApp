@@ -22,8 +22,10 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.quizapp.R;
 import com.example.quizapp.model.Question;
 import com.example.quizapp.utils.FirebaseUtils;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ public class QuizplayActivity extends AppCompatActivity {
     private static final long TIME_PER_QUESTION = 20000; // 20 giây mỗi câu hỏi
     private static final String TAG = "QuizplayActivity";
     private boolean isActivityActive = true;
+    private String currentUserId;
+    private String currentUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +87,17 @@ public class QuizplayActivity extends AppCompatActivity {
             return;
         }
 
+        // Lấy thông tin người dùng hiện tại
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+        if (currentUserId == null) {
+            Log.w(TAG, "No user logged in");
+            Toast.makeText(this, "Vui lòng đăng nhập để lưu điểm", Toast.LENGTH_SHORT).show();
+        } else {
+            loadUsername();
+        }
+
         // Xử lý các nút
         btnBackMain.setOnClickListener(v -> finish());
         btnPlayAgain.setOnClickListener(v -> restartGame());
@@ -94,6 +109,31 @@ public class QuizplayActivity extends AppCompatActivity {
 
         // Tải câu hỏi
         loadQuestionsFromFirebase();
+    }
+
+    private void loadUsername() {
+        DatabaseReference userRef = FirebaseUtils.getDatabase().getReference("users").child(currentUserId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    currentUsername = snapshot.child("username").getValue(String.class);
+                    if (currentUsername == null) {
+                        currentUsername = "Anonymous";
+                        Log.w(TAG, "No username found, using default: Anonymous");
+                    }
+                } else {
+                    currentUsername = "Anonymous";
+                    Log.w(TAG, "User data not found, using default: Anonymous");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Error loading username: " + error.getMessage());
+                currentUsername = "Anonymous";
+            }
+        });
     }
 
     private void loadQuestionsFromFirebase() {
@@ -247,11 +287,47 @@ public class QuizplayActivity extends AppCompatActivity {
             countDownTimer = null;
         }
         cardGameOver.setVisibility(View.VISIBLE);
-        tvHighScore.setText("Điểm: " + correctCount*10);
+        int finalScore = correctCount * 10;
+        tvHighScore.setText("Điểm: " + finalScore);
         tvQuestionsAnswered.setText("Số câu trả lời: " + totalQuestionsAnswered);
         enableOptions(false);
         rgAnswers.setOnCheckedChangeListener(null);
-        Log.d(TAG, "Game over displayed. Score: " + correctCount + ", Questions answered: " + totalQuestionsAnswered);
+        Log.d(TAG, "Game over displayed. Score: " + finalScore + ", Questions answered: " + totalQuestionsAnswered);
+
+        // Cập nhật điểm lên Firebase
+        if (currentUserId != null && currentUsername != null) {
+            updateLeaderboard(finalScore);
+        }
+    }
+
+    private void updateLeaderboard(int newScore) {
+        DatabaseReference leaderboardRef = FirebaseUtils.getLeaderboardRef().child(currentUserId);
+        leaderboardRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!isActivityActive) return;
+                Long currentHighScore = snapshot.child("highScore").getValue(Long.class);
+                if (currentHighScore == null || newScore > currentHighScore) {
+                    leaderboardRef.child("highScore").setValue(newScore);
+                    leaderboardRef.child("username").setValue(currentUsername)
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d(TAG, "Leaderboard updated: userId=" + currentUserId + ", score=" + newScore);
+                                Toast.makeText(QuizplayActivity.this, "Điểm cao đã được cập nhật!", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Failed to update leaderboard: " + e.getMessage());
+                                Toast.makeText(QuizplayActivity.this, "Lỗi cập nhật điểm cao", Toast.LENGTH_SHORT).show();
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (!isActivityActive) return;
+                Log.e(TAG, "Error reading leaderboard: " + error.getMessage());
+                Toast.makeText(QuizplayActivity.this, "Lỗi đọc dữ liệu bảng xếp hạng", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void enableOptions(boolean enable) {
