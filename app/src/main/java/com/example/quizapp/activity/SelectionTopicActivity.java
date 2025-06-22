@@ -43,8 +43,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
     private RecyclerView rvTopics;
     private TopicAdapter topicAdapter;
     private List<Topic> topicList = new ArrayList<>();
-    private FloatingActionButton fab_add_topic;
-    private FloatingActionButton fabAddTopic;
+    private FloatingActionButton fabAddTopic; // Sửa: Chỉ giữ một biến
     private DatabaseReference topicsRef;
 
     @Override
@@ -55,15 +54,17 @@ public class SelectionTopicActivity extends AppCompatActivity {
 
         btnBack = findViewById(R.id.btn_back);
         rvTopics = findViewById(R.id.rv_topics);
-
-        fab_add_topic = findViewById(R.id.fab_add_topic);
-        fabAddTopic = findViewById(R.id.fab_add_topic);
+        fabAddTopic = findViewById(R.id.fab_add_topic); // Sửa: Chỉ dùng fabAddTopic
 
         rvTopics.setLayoutManager(new LinearLayoutManager(this));
-        topicAdapter = new TopicAdapter(this,topicList);
+        topicAdapter = new TopicAdapter(this, topicList, new TopicAdapter.OnTopicActionListener() {
+            @Override
+            public void onDeleteTopic(Topic topic) {
+                showDeleteConfirmationDialog(topic);
+            }
+        });
         rvTopics.setAdapter(topicAdapter);
 
-        checkUserRoleAndLoadTopics();
         topicsRef = FirebaseUtils.getDatabase().getReference("topics");
 
         btnBack.setOnClickListener(v -> {
@@ -73,7 +74,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
 
         fabAddTopic.setOnClickListener(v -> showAddTopicDialog());
 
-        loadTopicsFromFirebase();
+        checkUserRoleAndLoadTopics();
     }
 
     private void loadTopicsFromFirebase() {
@@ -94,7 +95,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SelectionTopicActivity.this,
-                        "Failed to load topics: " + error.getMessage(),
+                        "Lỗi không tải được chủ đề: " + error.getMessage(),
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -117,36 +118,41 @@ public class SelectionTopicActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> {
             String topicName = etTopicName.getText().toString().trim();
             if (TextUtils.isEmpty(topicName)) {
-                etTopicName.setError("Please enter topic name");
+                etTopicName.setError("Chưa nhập tên chủ đề");
                 return;
             }
 
             String topicId = topicsRef.push().getKey();
             if (topicId == null) {
-                Toast.makeText(this, "Error generating topic ID", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Không thấy ID", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             topicsRef.child(topicId).child("name").setValue(topicName)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(SelectionTopicActivity.this,
-                                "Topic added successfully",
+                                "Thêm chủ đề thành công",
                                 Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(SelectionTopicActivity.this,
-                                "Failed to add topic: " + e.getMessage(),
+                                "Lỗi không thêm được chủ đề: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     });
         });
         btnCancel.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
-    private void checkUserRoleAndLoadTopics() {
 
+    private void checkUserRoleAndLoadTopics() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) return;
+        if (currentUser == null) {
+            topicAdapter.setAdmin(false);
+            fabAddTopic.setVisibility(View.GONE);
+            loadTopicsFromFirebase();
+            return;
+        }
 
         DatabaseReference userRef = FirebaseUtils.getDatabase().getReference("users").child(currentUser.getUid());
 
@@ -156,15 +162,43 @@ public class SelectionTopicActivity extends AppCompatActivity {
                 String role = snapshot.getValue(String.class);
                 boolean isAdmin = "admin".equalsIgnoreCase(role);
                 topicAdapter.setAdmin(isAdmin);
-                if (fab_add_topic != null) {
-                    fab_add_topic.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
-                }
-                rvTopics.setAdapter(topicAdapter);
+                fabAddTopic.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
                 loadTopicsFromFirebase();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(SelectionTopicActivity.this,
+                        "Lỗi phân quyền: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+                topicAdapter.setAdmin(false);
+                fabAddTopic.setVisibility(View.GONE);
+                loadTopicsFromFirebase();
             }
         });
+    }
+
+    private void showDeleteConfirmationDialog(Topic topic) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Topic")
+                .setMessage("Bạn có chắc chắn xóa chủ đề '" + topic.getName() + "'? ")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    deleteTopicFromFirebase(topic);
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void deleteTopicFromFirebase(Topic topic) {
+        topicsRef.child(topic.getId()).removeValue()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(SelectionTopicActivity.this,
+                            "Đã xóa chủ đề",
+                            Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(SelectionTopicActivity.this,
+                            "Lỗi xóa chủ đề: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
     }
 }

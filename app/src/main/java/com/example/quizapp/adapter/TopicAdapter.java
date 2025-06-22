@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,10 +22,22 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
 
     private List<Topic> topics;
     private Context context;
+    private boolean isAdmin = false;
+    private OnTopicActionListener listener;
 
-    public TopicAdapter(Context context, List<Topic> topics) {
-        this.topics = topics;
+    public interface OnTopicActionListener {
+        void onDeleteTopic(Topic topic);
+    }
+
+    public TopicAdapter(Context context, List<Topic> topics, OnTopicActionListener listener) {
         this.context = context;
+        this.topics = topics;
+        this.listener = listener;
+    }
+
+    public void setAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -41,22 +52,25 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
         Topic topic = topics.get(position);
         holder.tvTopicName.setText(topic.getName());
 
+        // Xử lý nút Add Question
         holder.btnAdd.setOnClickListener(v -> {
             Intent intent = new Intent(context, AddQuestionActivity.class);
-            intent.putExtra("topicId", topics.get(position).getId());
+            intent.putExtra("topicId", topic.getId());
             context.startActivity(intent);
         });
-        if (isAdmin) {
-            holder.btnAdd.setVisibility(View.VISIBLE);
-            holder.btnEdit.setVisibility(View.VISIBLE);
-            holder.btnAdd.setVisibility(View.VISIBLE);
-        } else {
-            holder.btnEdit.setVisibility(View.GONE);
-            holder.btnDelete.setVisibility(View.GONE);
-            holder.btnAdd.setVisibility(View.GONE);
-        }
-    }
 
+        // Xử lý nút Delete Topic
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onDeleteTopic(topic);
+            }
+        });
+
+        // Ẩn/hiện các nút dựa trên quyền admin
+        holder.btnAdd.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        holder.btnEdit.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        holder.btnDelete.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+    }
 
     @Override
     public int getItemCount() {
@@ -66,20 +80,15 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
     public static class TopicViewHolder extends RecyclerView.ViewHolder {
         ImageView ivTopicIcon;
         TextView tvTopicName;
-        ImageButton btnAdd,btnEdit,btnDelete;
+        ImageButton btnAdd, btnEdit, btnDelete;
 
         public TopicViewHolder(@NonNull View itemView) {
             super(itemView);
             ivTopicIcon = itemView.findViewById(R.id.iv_topic_icon);
             tvTopicName = itemView.findViewById(R.id.tv_topic_name);
             btnAdd = itemView.findViewById(R.id.btn_add_question);
-            btnDelete = itemView.findViewById(R.id.btn_delete_topic);
             btnEdit = itemView.findViewById(R.id.btn_edit_topic);
+            btnDelete = itemView.findViewById(R.id.btn_delete_topic);
         }
-    }
-    private boolean isAdmin = false;
-    public void setAdmin(boolean isAdmin) {
-        this.isAdmin = isAdmin;
-        notifyDataSetChanged();
     }
 }
