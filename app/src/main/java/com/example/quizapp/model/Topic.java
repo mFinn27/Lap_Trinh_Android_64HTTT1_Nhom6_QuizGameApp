@@ -1,18 +1,26 @@
 package com.example.quizapp.model;
 
-public class Topic {
-    private String name;
-    private String id;
+import java.io.Serializable;
 
-    public Topic() {}
+public class Topic implements Serializable {
+    private String id;
+    private String name;
+    private String icon;
+
+    public Topic() {
+        // Constructor mặc định cho Firebase
+    }
 
     public Topic(String id, String name) {
         this.id = id;
         this.name = name;
+        this.icon = "ic_topic_animal"; // Icon mặc định
     }
 
-    public String getName() {
-        return name;
+    public Topic(String id, String name, String icon) {
+        this.id = id;
+        this.name = name;
+        this.icon = icon;
     }
 
     public String getId() {
@@ -23,7 +31,19 @@ public class Topic {
         this.id = id;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 }
