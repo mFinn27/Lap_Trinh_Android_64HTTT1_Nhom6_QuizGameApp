@@ -268,9 +268,6 @@ public class QuizplayActivity extends AppCompatActivity {
                 currentIndex++;
                 showNextQuestion();
             } else {
-                String correctOption = questionList.get(currentIndex).getOptions().get(correctIndex);
-                Log.d(TAG, "Wrong answer, showing game over. Correct answer: " + correctOption);
-                Toast.makeText(this, "Sai! Đáp án đúng: " + correctOption, Toast.LENGTH_SHORT).show();
                 showGameOver();
             }
         } catch (Exception e) {
