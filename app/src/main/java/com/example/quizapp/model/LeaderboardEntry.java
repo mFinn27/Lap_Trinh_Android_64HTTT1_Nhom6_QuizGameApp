@@ -2,12 +2,13 @@ package com.example.quizapp.model;
 
 public class LeaderboardEntry {
     public String username;
-    public int score;
+    public String uid;
+    public int  highScore;
 
     public LeaderboardEntry() {}
 
-    public LeaderboardEntry(String username, int score) {
+    public LeaderboardEntry(String username, int highScore) {
         this.username = username;
-        this.score = score;
+        this.highScore = highScore;
     }
 }
