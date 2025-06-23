@@ -23,12 +23,13 @@
         android:id="@+id/logo"
         android:layout_width="262dp"
         android:layout_height="152dp"
-        android:layout_marginBottom="560dp"
         android:src="@drawable/quiz_logo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <androidx.cardview.widget.CardView

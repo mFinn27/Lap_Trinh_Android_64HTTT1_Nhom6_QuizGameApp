@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFD700" /> <!-- Màu vàng nổi bật -->
+    <stroke
+        android:width="3dp"
+        android:color="#FF8B008B" /> <!-- Viền magenta -->
+    <size
+        android:width="44dp"
+        android:height="44dp" />
+</shape>
