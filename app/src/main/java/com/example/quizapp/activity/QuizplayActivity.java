@@ -1,6 +1,7 @@
 package com.example.quizapp.activity;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -52,6 +53,7 @@ public class QuizplayActivity extends AppCompatActivity {
     private boolean isActivityActive = true;
     private String currentUserId;
     private String currentUsername;
+    private MediaPlayer backgroundMusicPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +100,9 @@ public class QuizplayActivity extends AppCompatActivity {
             loadUsername();
         }
 
+        // Khởi tạo và phát nhạc nền
+        setupBackgroundMusic();
+
         // Xử lý các nút
         btnBackMain.setOnClickListener(v -> finish());
         btnPlayAgain.setOnClickListener(v -> restartGame());
@@ -109,6 +114,15 @@ public class QuizplayActivity extends AppCompatActivity {
 
         // Tải câu hỏi
         loadQuestionsFromFirebase();
+    }
+
+    private void setupBackgroundMusic() {
+        backgroundMusicPlayer = MediaPlayer.create(this, R.raw.background_music);
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.setLooping(true); // Lặp lại nhạc nền
+            backgroundMusicPlayer.setVolume(1.0f, 1.0f); // Giảm âm lượng để không lấn át
+            backgroundMusicPlayer.start();
+        }
     }
 
     private void loadUsername() {
@@ -147,7 +161,6 @@ public class QuizplayActivity extends AppCompatActivity {
                     Long correctAnswer = ds.child("correctAnswer").getValue(Long.class);
                     List<String> options = new ArrayList<>();
                     DataSnapshot optionsSnap = ds.child("options");
-                    // Tải options theo thứ tự 0, 1, 2, 3
                     for (int i = 0; i < 4; i++) {
                         String optionText = optionsSnap.child(String.valueOf(i)).getValue(String.class);
                         if (optionText != null) {
@@ -268,6 +281,9 @@ public class QuizplayActivity extends AppCompatActivity {
                 currentIndex++;
                 showNextQuestion();
             } else {
+                String correctOption = questionList.get(currentIndex).getOptions().get(correctIndex);
+                Log.d(TAG, "Wrong answer, showing game over. Correct answer: " + correctOption);
+                Toast.makeText(this, "Sai! Đáp án đúng: " + correctOption, Toast.LENGTH_SHORT).show();
                 showGameOver();
             }
         } catch (Exception e) {
@@ -360,6 +376,9 @@ public class QuizplayActivity extends AppCompatActivity {
             countDownTimer.cancel();
             countDownTimer = null;
         }
+        if (backgroundMusicPlayer != null && backgroundMusicPlayer.isPlaying()) {
+            backgroundMusicPlayer.pause();
+        }
     }
 
     @Override
@@ -368,6 +387,9 @@ public class QuizplayActivity extends AppCompatActivity {
         isActivityActive = true;
         if (questionList != null && !questionList.isEmpty() && currentIndex < questionList.size()) {
             showNextQuestion();
+        }
+        if (backgroundMusicPlayer != null && !backgroundMusicPlayer.isPlaying()) {
+            backgroundMusicPlayer.start();
         }
     }
 
@@ -378,6 +400,11 @@ public class QuizplayActivity extends AppCompatActivity {
         if (countDownTimer != null) {
             countDownTimer.cancel();
             countDownTimer = null;
+        }
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.stop();
+            backgroundMusicPlayer.release();
+            backgroundMusicPlayer = null;
         }
     }
 }

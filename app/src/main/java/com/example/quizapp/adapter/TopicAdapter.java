@@ -1,7 +1,10 @@
 package com.example.quizapp.adapter;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,12 +63,9 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
         int iconResId = context.getResources().getIdentifier(iconName, "drawable", context.getPackageName());
         holder.ivTopicIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_topic_animal);
 
-        // Xử lý click vào item để chơi quiz
+        // Xử lý click vào item để hiển thị dialog đếm ngược
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, QuizplayActivity.class);
-            intent.putExtra("topicId", topic.getId());
-            intent.putExtra("topicName", topic.getName());
-            context.startActivity(intent);
+            showReadyDialog(topic.getId(), topic.getName());
         });
 
         // Xử lý nút Add Question
@@ -93,6 +93,49 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
         holder.btnAdd.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         holder.btnEdit.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         holder.btnDelete.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+    }
+
+    private void showReadyDialog(String topicId, String topicName) {
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialog_ready);
+        dialog.setCancelable(false); // Không cho phép thoát dialog bằng nút back
+
+        TextView tvCountdown = dialog.findViewById(R.id.tv_countdown);
+
+        // Khởi tạo MediaPlayer cho âm thanh đếm ngược
+        MediaPlayer countdownPlayer = MediaPlayer.create(context, R.raw.countdown_3s);
+        if (countdownPlayer != null) {
+            countdownPlayer.setVolume(1.0f, 1.0f); // Đặt âm lượng tối đa
+            countdownPlayer.start();
+        }
+
+        // Đếm ngược 3 giây
+        new CountDownTimer(4000, 1000) { // 4 giây để bao gồm cả "Go!"
+            @Override
+            public void onTick(long millisUntilFinished) {
+                int secondsLeft = (int) (millisUntilFinished / 1000);
+                tvCountdown.setText(String.valueOf(secondsLeft));
+            }
+
+            @Override
+            public void onFinish() {
+                tvCountdown.setText("Go!");
+                // Chuyển sang QuizplayActivity sau 0.5 giây
+                new android.os.Handler().postDelayed(() -> {
+                    Intent intent = new Intent(context, QuizplayActivity.class);
+                    intent.putExtra("topicId", topicId);
+                    intent.putExtra("topicName", topicName);
+                    context.startActivity(intent);
+                    dialog.dismiss();
+                    // Giải phóng tài nguyên MediaPlayer
+                    if (countdownPlayer != null) {
+                        countdownPlayer.release();
+                    }
+                }, 500);
+            }
+        }.start();
+
+        dialog.show();
     }
 
     @Override
