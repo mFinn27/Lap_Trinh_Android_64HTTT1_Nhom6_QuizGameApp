@@ -31,7 +31,7 @@ public class EditTopicActivity extends AppCompatActivity {
     private AppCompatButton btnChangeIcon, btnSaveTopic;
     private DatabaseReference topicsRef;
     private Topic topic;
-    private String selectedIcon; // Lưu tên resource icon
+    private String selectedIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,6 @@ public class EditTopicActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_topic);
 
-        // Khởi tạo views
         btnBack = findViewById(R.id.btn_back);
         tvTitle = findViewById(R.id.tv_title);
         etTopicName = findViewById(R.id.et_topic_name);
@@ -47,7 +46,6 @@ public class EditTopicActivity extends AppCompatActivity {
         btnChangeIcon = findViewById(R.id.btn_change_icon);
         btnSaveTopic = findViewById(R.id.btn_save_topic);
 
-        // Lấy topic từ Intent
         topic = (Topic) getIntent().getSerializableExtra("topic");
         if (topic == null) {
             Toast.makeText(this, "Error: Topic not found", Toast.LENGTH_SHORT).show();
@@ -55,27 +53,22 @@ public class EditTopicActivity extends AppCompatActivity {
             return;
         }
 
-        // Khởi tạo Firebase reference
         topicsRef = FirebaseUtils.getDatabase().getReference("topics").child(topic.getId());
 
-        // Hiển thị thông tin topic hiện tại
         etTopicName.setText(topic.getName());
         selectedIcon = topic.getIcon() != null ? topic.getIcon() : "ic_topic_animal";
         int iconResId = getResources().getIdentifier(selectedIcon, "drawable", getPackageName());
         ivTopicIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_topic_animal);
 
-        // Xử lý sự kiện click
         btnBack.setOnClickListener(v -> finish());
 
         btnChangeIcon.setOnClickListener(v -> {
-            // Lấy danh sách drawable
             List<String> drawableNames = getDrawableNames();
             if (drawableNames.isEmpty()) {
                 Toast.makeText(this, "No icons available", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Hiển thị dialog chọn icon
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Choose Icon");
             builder.setItems(drawableNames.toArray(new String[0]), (dialog, which) -> {
@@ -95,7 +88,6 @@ public class EditTopicActivity extends AppCompatActivity {
                 return;
             }
 
-            // Lưu thay đổi vào Firebase
             topicsRef.child("name").setValue(newTopicName)
                     .addOnSuccessListener(aVoid -> {
                         // Lưu icon

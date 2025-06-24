@@ -47,7 +47,6 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Question -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -65,7 +64,6 @@
                     android:minLines="2" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Answer 1 -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -82,7 +80,6 @@
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Answer 2 -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -99,7 +96,6 @@
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Answer 3 -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -116,7 +112,6 @@
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Answer 4 -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -133,7 +128,6 @@
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Correct Answer -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -150,7 +144,6 @@
                     android:spinnerMode="dropdown" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Save Button -->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_save_question"
                 android:layout_width="match_parent"

@@ -48,31 +48,25 @@ public class LeaderboardActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Khởi tạo views
         btn_back = findViewById(R.id.btn_back);
         recyclerView = findViewById(R.id.rv_leaderboard);
         tvCurrentUserRank = findViewById(R.id.tv_current_user_rank);
         tvCurrentUserName = findViewById(R.id.tv_current_user_name);
         tvCurrentUserScore = findViewById(R.id.tv_current_user_score);
 
-        // Khởi tạo RecyclerView
         entries = new ArrayList<>();
         adapter = new LeaderboardAdapter(entries);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // Lấy currentUserId
         currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : null;
 
-        // Xử lý nút back
         btn_back.setOnClickListener(v -> {
             startActivity(new Intent(LeaderboardActivity.this, MainMenuActivity.class));
             finish();
         });
-
-        // Tải dữ liệu bảng xếp hạng
         loadLeaderboard();
     }
 
@@ -88,31 +82,24 @@ public class LeaderboardActivity extends AppCompatActivity {
                         entries.add(entry);
                     }
                 }
-                Collections.reverse(entries); // Đảo ngược để xếp từ cao đến thấp
+                Collections.reverse(entries);
                 adapter.notifyDataSetChanged();
-
-                // Cập nhật thông tin người dùng hiện tại
                 updateCurrentUserInfo();
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                // Xử lý lỗi nếu cần
             }
         });
     }
 
     private void updateCurrentUserInfo() {
         if (currentUserId == null) {
-            // Ẩn footer nếu người dùng chưa đăng nhập
             findViewById(R.id.footer_card).setVisibility(View.GONE);
             return;
         }
 
-        // Hiển thị footer
         findViewById(R.id.footer_card).setVisibility(View.VISIBLE);
-
-        // Tìm thông tin người dùng hiện tại
         FirebaseUtils.getLeaderboardRef().child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -120,28 +107,23 @@ public class LeaderboardActivity extends AppCompatActivity {
                     LeaderboardEntry currentUserEntry = snapshot.getValue(LeaderboardEntry.class);
                     if (currentUserEntry != null) {
                         currentUserEntry.uid = snapshot.getKey();
-                        // Tính thứ hạng
                         int rank = 1;
                         for (LeaderboardEntry entry : entries) {
                             if (entry.highScore > currentUserEntry.highScore) {
                                 rank++;
                             } else if (entry.highScore == currentUserEntry.highScore && !entry.uid.equals(currentUserId)) {
-                                // Nếu điểm bằng nhau, so sánh uid để đảm bảo thứ hạng chính xác
                                 rank++;
                             }
                         }
-                        // Cập nhật giao diện footer
                         tvCurrentUserRank.setText(String.valueOf(rank));
                         tvCurrentUserName.setText(currentUserEntry.username != null ? currentUserEntry.username : "Anonymous");
                         tvCurrentUserScore.setText(currentUserEntry.highScore + " điểm");
                     } else {
-                        // Không có dữ liệu, hiển thị mặc định
                         tvCurrentUserRank.setText("?");
                         tvCurrentUserName.setText("Anonymous");
                         tvCurrentUserScore.setText("0 điểm");
                     }
                 } else {
-                    // Người dùng chưa có điểm, hiển thị mặc định
                     tvCurrentUserRank.setText("?");
                     tvCurrentUserName.setText("Anonymous");
                     tvCurrentUserScore.setText("0 điểm");
@@ -150,7 +132,6 @@ public class LeaderboardActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Ẩn footer nếu có lỗi
                 findViewById(R.id.footer_card).setVisibility(View.GONE);
             }
         });

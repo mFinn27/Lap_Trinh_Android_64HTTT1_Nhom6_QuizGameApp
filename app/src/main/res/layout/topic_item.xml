@@ -14,7 +14,6 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <!-- Topic Icon -->
         <ImageView
             android:id="@+id/iv_topic_icon"
             android:layout_width="40dp"
@@ -22,7 +21,6 @@
             android:src="@drawable/ic_topic_animal"
             android:contentDescription="Topic Icon" />
 
-        <!-- Topic Name -->
         <TextView
             android:id="@+id/tv_topic_name"
             android:layout_width="0dp"
@@ -35,7 +33,6 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <!-- Admin Controls (Edit/Delete) -->
         <ImageButton
             android:id="@+id/btn_add_question"
             android:layout_width="wrap_content"

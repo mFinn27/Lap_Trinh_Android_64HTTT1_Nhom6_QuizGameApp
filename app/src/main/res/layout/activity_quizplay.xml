@@ -19,7 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Timer -->
     <TextView
         android:id="@+id/tv_timer"
         android:layout_width="wrap_content"
@@ -31,8 +30,6 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Question Card -->
 
     <ImageView
         android:id="@+id/logo"
@@ -69,7 +66,6 @@
             android:fontFamily="casual"/>
     </androidx.cardview.widget.CardView>
 
-    <!-- Answer Options -->
     <RadioGroup
         android:id="@+id/rg_answers"
         android:layout_width="0dp"
@@ -133,8 +129,6 @@
             android:textColor="@android:color/black"
             android:textSize="16sp" />
     </RadioGroup>
-
-    <!-- Game Over Dialog -->
 
     <TextView
         android:layout_width="match_parent"

@@ -189,7 +189,7 @@ public class SelectionTopicActivity extends AppCompatActivity {
     private void showDeleteConfirmationDialog(Topic topic) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Topic")
-                .setMessage("Are you sure you want to delete the topic '" + topic.getName() + "'? This will also delete all related questions.")
+                .setMessage("Bạn có muốn xóa chủ đề '" + topic.getName() + "'? Những câu hỏi liên quan cũng sẽ bị xóa.")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     deleteTopicFromFirebase(topic);
                 })
@@ -201,12 +201,12 @@ public class SelectionTopicActivity extends AppCompatActivity {
         topicsRef.child(topic.getId()).removeValue()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(SelectionTopicActivity.this,
-                            "Topic deleted successfully",
+                            "Xóa chủ đề thành công",
                             Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(SelectionTopicActivity.this,
-                            "Failed to delete topic: " + e.getMessage(),
+                            "Lỗi xóa chủ đề: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
                 });
     }

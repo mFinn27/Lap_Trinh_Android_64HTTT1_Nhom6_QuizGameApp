@@ -65,7 +65,6 @@ public class QuizplayActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Khởi tạo views
         tvQuestion = findViewById(R.id.tv_question);
         tvTimer = findViewById(R.id.tv_timer);
         tvHighScore = findViewById(R.id.tv_high_score);
@@ -80,7 +79,6 @@ public class QuizplayActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btn_back_to_topics);
         btnBackMain = findViewById(R.id.button_back);
 
-        // Lấy topicId từ Intent
         topicId = getIntent().getStringExtra("topicId");
         if (topicId == null) {
             Log.e(TAG, "No topicId provided in Intent");
@@ -89,7 +87,6 @@ public class QuizplayActivity extends AppCompatActivity {
             return;
         }
 
-        // Lấy thông tin người dùng hiện tại
         currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : null;
@@ -99,11 +96,8 @@ public class QuizplayActivity extends AppCompatActivity {
         } else {
             loadUsername();
         }
-
-        // Khởi tạo và phát nhạc nền
         setupBackgroundMusic();
 
-        // Xử lý các nút
         btnBackMain.setOnClickListener(v -> finish());
         btnPlayAgain.setOnClickListener(v -> restartGame());
         btnBack.setOnClickListener(v -> {
@@ -112,7 +106,6 @@ public class QuizplayActivity extends AppCompatActivity {
             finish();
         });
 
-        // Tải câu hỏi
         loadQuestionsFromFirebase();
     }
 
@@ -307,7 +300,6 @@ public class QuizplayActivity extends AppCompatActivity {
         rgAnswers.setOnCheckedChangeListener(null);
         Log.d(TAG, "Game over displayed. Score: " + finalScore + ", Questions answered: " + totalQuestionsAnswered);
 
-        // Cập nhật điểm lên Firebase
         if (currentUserId != null && currentUsername != null) {
             updateLeaderboard(finalScore);
         }

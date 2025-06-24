@@ -14,7 +14,6 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <!-- Rank -->
         <TextView
             android:id="@+id/tv_rank"
             android:layout_width="40dp"
@@ -26,7 +25,6 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- Username -->
         <TextView
             android:id="@+id/tv_username"
             android:layout_width="0dp"
@@ -38,7 +36,6 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <!-- Score -->
         <TextView
             android:id="@+id/tv_score"
             android:layout_width="wrap_content"

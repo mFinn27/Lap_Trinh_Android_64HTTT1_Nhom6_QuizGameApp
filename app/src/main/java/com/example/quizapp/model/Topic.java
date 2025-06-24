@@ -8,13 +8,12 @@ public class Topic implements Serializable {
     private String icon;
 
     public Topic() {
-        // Constructor mặc định cho Firebase
     }
 
     public Topic(String id, String name) {
         this.id = id;
         this.name = name;
-        this.icon = "ic_topic_animal"; // Icon mặc định
+        this.icon = "ic_topic_animal";
     }
 
     public Topic(String id, String name, String icon) {

@@ -58,38 +58,32 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
         Topic topic = topics.get(position);
         holder.tvTopicName.setText(topic.getName());
 
-        // Hiển thị icon
         String iconName = topic.getIcon() != null ? topic.getIcon() : "ic_topic_animal";
         int iconResId = context.getResources().getIdentifier(iconName, "drawable", context.getPackageName());
         holder.ivTopicIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_topic_animal);
 
-        // Xử lý click vào item để hiển thị dialog đếm ngược
         holder.itemView.setOnClickListener(v -> {
             showReadyDialog(topic.getId(), topic.getName());
         });
 
-        // Xử lý nút Add Question
         holder.btnAdd.setOnClickListener(v -> {
             Intent intent = new Intent(context, AddQuestionActivity.class);
             intent.putExtra("topicId", topic.getId());
             context.startActivity(intent);
         });
 
-        // Xử lý nút Edit Topic
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onEditTopic(topic);
             }
         });
 
-        // Xử lý nút Delete Topic
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onDeleteTopic(topic);
             }
         });
 
-        // Ẩn/hiện các nút dựa trên quyền admin
         holder.btnAdd.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         holder.btnEdit.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         holder.btnDelete.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
@@ -98,18 +92,16 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
     private void showReadyDialog(String topicId, String topicName) {
         Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.dialog_ready);
-        dialog.setCancelable(false); // Không cho phép thoát dialog bằng nút back
+        dialog.setCancelable(false);
 
         TextView tvCountdown = dialog.findViewById(R.id.tv_countdown);
 
-        // Khởi tạo MediaPlayer cho âm thanh đếm ngược
         MediaPlayer countdownPlayer = MediaPlayer.create(context, R.raw.countdown_3s);
         if (countdownPlayer != null) {
             countdownPlayer.setVolume(1.0f, 1.0f); // Đặt âm lượng tối đa
             countdownPlayer.start();
         }
 
-        // Đếm ngược 3 giây
         new CountDownTimer(4000, 1000) { // 4 giây để bao gồm cả "Go!"
             @Override
             public void onTick(long millisUntilFinished) {
@@ -120,7 +112,6 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.TopicViewHol
             @Override
             public void onFinish() {
                 tvCountdown.setText("Go!");
-                // Chuyển sang QuizplayActivity sau 0.5 giây
                 new android.os.Handler().postDelayed(() -> {
                     Intent intent = new Intent(context, QuizplayActivity.class);
                     intent.putExtra("topicId", topicId);

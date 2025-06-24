@@ -43,7 +43,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:padding="8dp" />
 
-    <!-- Admin Panel (Visible only for admins) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_topic"
         android:layout_width="wrap_content"
