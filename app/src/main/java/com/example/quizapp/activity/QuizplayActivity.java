@@ -48,7 +48,7 @@ public class QuizplayActivity extends AppCompatActivity {
     private int totalQuestionsAnswered = 0;
     private String topicId;
     private CountDownTimer countDownTimer;
-    private static final long TIME_PER_QUESTION = 20000; // 20 giây mỗi câu hỏi
+    private static final long TIME_PER_QUESTION = 20000;
     private static final String TAG = "QuizplayActivity";
     private boolean isActivityActive = true;
     private String currentUserId;
@@ -112,8 +112,8 @@ public class QuizplayActivity extends AppCompatActivity {
     private void setupBackgroundMusic() {
         backgroundMusicPlayer = MediaPlayer.create(this, R.raw.background_music);
         if (backgroundMusicPlayer != null) {
-            backgroundMusicPlayer.setLooping(true); // Lặp lại nhạc nền
-            backgroundMusicPlayer.setVolume(1.0f, 1.0f); // Giảm âm lượng để không lấn át
+            backgroundMusicPlayer.setLooping(true);
+            backgroundMusicPlayer.setVolume(1.0f, 1.0f);
             backgroundMusicPlayer.start();
         }
     }

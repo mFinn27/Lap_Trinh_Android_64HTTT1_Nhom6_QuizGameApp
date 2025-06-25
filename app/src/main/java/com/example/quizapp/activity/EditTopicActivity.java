@@ -117,7 +117,6 @@ public class EditTopicActivity extends AppCompatActivity {
         Field[] fields = R.drawable.class.getFields();
         for (Field field : fields) {
             try {
-                // Lọc các drawable bắt đầu bằng "ic_topic" (tùy chọn)
                 String name = field.getName();
                 if (name.startsWith("ic_topic")) {
                     drawableNames.add(name);
