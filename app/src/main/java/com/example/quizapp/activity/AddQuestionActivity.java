@@ -27,7 +27,7 @@ public class AddQuestionActivity extends AppCompatActivity {
 
     private TextInputEditText etQuestion, etAnswer1, etAnswer2, etAnswer3, etAnswer4;
     private Spinner spCorrectAnswer;
-    private String topicId;
+    private String topicID;
 
     private ImageButton btnback;
 
@@ -42,8 +42,8 @@ public class AddQuestionActivity extends AppCompatActivity {
             return insets;
         });
 
-        topicId = getIntent().getStringExtra("topicId");
-        if (topicId == null) {
+        topicID = getIntent().getStringExtra("topicId");
+        if (topicID == null) {
             Toast.makeText(this, "No topic selected", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -89,7 +89,7 @@ public class AddQuestionActivity extends AppCompatActivity {
         List<String> options = Arrays.asList(ans1, ans2, ans3, ans4);
         Question newQuestion = new Question(question, options, correctAnswer);
 
-        DatabaseReference questionsRef = FirebaseUtils.getQuestionsRef(topicId);
+        DatabaseReference questionsRef = FirebaseUtils.getQuestionsRef(topicID);
         String newKey = questionsRef.push().getKey();
 
         if (newKey == null) {
